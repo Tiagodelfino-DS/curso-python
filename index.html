@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python para o Ensino Médio 🐍</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #1D9E75; --green-light: #E1F5EE; --green-mid: #9FE1CB; --green-dark: #0F6E56;
+    --blue-light: #E6F1FB; --blue-dark: #0C447C;
+    --red-light: #FCEBEB; --red-dark: #A32D2D;
+    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #efefec;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #888780;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --radius: 10px; --radius-sm: 7px;
+    --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --bg2: #252523; --bg3: #2c2c2a;
+      --text: #f0ede8; --text2: #b4b2a9; --text3: #888780;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --green-light: #04342c; --blue-light: #042c53; --blue-dark: #85b7eb;
+      --red-light: #501313; --red-dark: #f09595;
+    }
+  }
+  body { font-family: var(--font); background: var(--bg3); color: var(--text); min-height: 100vh; }
+
+  .shell { max-width: 680px; margin: 0 auto; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .header { text-align: center; padding: 1.5rem 1rem 0.75rem; background: var(--bg); border-bottom: 0.5px solid var(--border); }
+  .header .snake { font-size: 42px; margin-bottom: 6px; }
+  .header h1 { font-size: 20px; font-weight: 600; color: var(--text); }
+  .header p { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+  /* PROGRESS */
+  .top-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--bg); border-bottom: 0.5px solid var(--border); }
+  .pbwrap { flex: 1; background: var(--bg3); border-radius: 99px; height: 7px; overflow: hidden; }
+  .pbfill { background: var(--green); height: 100%; border-radius: 99px; transition: width 0.5s ease; width: 0%; }
+  .xp-pill { background: var(--blue-light); color: var(--blue-dark); font-size: 12px; padding: 4px 11px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+  .pglabel { text-align: center; font-size: 12px; color: var(--text3); padding: 5px 16px 8px; background: var(--bg); }
+
+  /* MODULES */
+  .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 12px; background: var(--bg); border-bottom: 0.5px solid var(--border); }
+  .mcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 8px; cursor: pointer; transition: all 0.15s; position: relative; text-align: center; user-select: none; }
+  .mcard:hover:not(.locked) { border-color: var(--border2); background: var(--bg2); }
+  .mcard.active { border: 1.5px solid var(--green); background: var(--green-light); }
+  .mcard.locked { opacity: 0.38; cursor: not-allowed; }
+  .mcard .micon { font-size: 20px; margin-bottom: 3px; }
+  .mcard .mtitle { font-size: 11px; font-weight: 600; color: var(--text); }
+  .mcard .msub { font-size: 10px; color: var(--text2); margin-top: 2px; }
+  .mbadge { position: absolute; top: 5px; right: 5px; font-size: 9px; padding: 2px 5px; border-radius: 99px; font-weight: 600; }
+  .mbadge.done { background: var(--green-light); color: var(--green-dark); }
+  .mbadge.cur { background: var(--green-mid); color: #085041; }
+  .mbadge.lck { background: var(--bg2); color: var(--text3); }
+
+  /* LESSON */
+  .lesson { flex: 1; padding: 16px; }
+  .lesson h2 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .concept { font-size: 13.5px; color: var(--text2); line-height: 1.7; margin-bottom: 14px; }
+  .concept b { color: var(--text); }
+  .concept code { font-family: var(--mono); background: var(--bg2); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+
+  /* CODE */
+  .code-block { background: #1e1e1c; border-radius: var(--radius); padding: 14px 16px; font-family: var(--mono); font-size: 12.5px; color: #e8e5e0; margin-bottom: 12px; line-height: 1.8; overflow-x: auto; white-space: pre; }
+  .cm { color: #5DCAA5; } .ck { color: #FAC775; } .cs { color: #F4C0D1; } .cf { color: #85B7EB; } .cn { color: #F0997B; }
+
+  /* OUTPUT PREVIEW */
+  .out-preview { background: var(--bg2); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12.5px; color: var(--text2); margin-bottom: 14px; border-left: 3px solid var(--green); }
+  .out-preview strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  .out-preview span { font-family: var(--mono); color: var(--green); }
+
+  /* TRY IT */
+  .try-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; display: block; }
+  textarea.try-code { width: 100%; font-family: var(--mono); font-size: 12.5px; background: var(--bg2); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px; color: var(--text); resize: vertical; min-height: 80px; outline: none; line-height: 1.7; }
+  textarea.try-code:focus { border-color: var(--green); }
+  .run-btn { margin-top: 8px; background: var(--green); color: #fff; border: none; border-radius: var(--radius-sm); padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .run-btn:hover { background: var(--green-dark); }
+  .run-btn svg { width: 14px; height: 14px; fill: white; }
+  .out-box { display: none; margin-top: 8px; background: #1e1e1c; border-radius: var(--radius-sm); padding: 10px 14px; font-family: var(--mono); font-size: 12.5px; color: #9FE1CB; white-space: pre-wrap; }
+  .out-box.vis { display: block; }
+
+  /* QUIZ */
+  .quiz-wrap { background: var(--bg2); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+  .quiz-q { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 12px; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; }
+  .qopt { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 9px 13px; font-size: 13px; cursor: pointer; color: var(--text); text-align: left; transition: all 0.12s; font-family: var(--font); }
+  .qopt:hover:not(:disabled) { border-color: var(--green); }
+  .qopt.correct { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+  .qopt.wrong { background: var(--red-light); border-color: var(--red-dark); color: var(--red-dark); }
+  .qopt:disabled { cursor: default; }
+  .qfb { display: none; margin-top: 10px; padding: 9px 13px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; }
+  .qfb.show { display: block; }
+  .qfb.ok { background: var(--green-light); color: var(--green-dark); }
+  .qfb.err { background: var(--red-light); color: var(--red-dark); }
+
+  /* NAV */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 0.5px solid var(--border); }
+  .nav-btn { border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; cursor: pointer; background: var(--bg); color: var(--text); font-family: var(--font); display: inline-flex; align-items: center; gap: 5px; }
+  .nav-btn:hover { background: var(--bg2); }
+  .nav-btn.primary { background: var(--green); color: #fff; border-color: var(--green); font-weight: 600; }
+  .nav-btn.primary:hover { background: var(--green-dark); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .dots { display: flex; gap: 5px; align-items: center; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); }
+  .dot.active { background: var(--green); }
+  .dot.done { background: var(--green-mid); }
+
+  /* CONGRATS */
+  .congrats { text-align: center; padding: 2rem 1rem; }
+  .congrats .trophy { font-size: 56px; margin-bottom: 14px; }
+  .congrats h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .congrats p { font-size: 14px; color: var(--text2); line-height: 1.65; margin-bottom: 16px; }
+  .badge-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0; }
+  .badge-item { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 7px 14px; font-size: 13px; color: var(--text2); }
+  .xp-final { font-size: 22px; font-weight: 700; color: var(--green); margin: 10px 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 400px) {
+    .modules { grid-template-columns: repeat(2, 1fr); }
+    .mcard .mtitle { font-size: 10px; }
+    .header h1 { font-size: 17px; }
+    .lesson { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="snake">🐍</div>
+    <h1>Python para o Ensino Médio</h1>
+    <p>Aprenda programação do zero, de um jeito divertido!</p>
+  </div>
+  <div class="top-bar">
+    <div class="pbwrap"><div class="pbfill" id="pbfill"></div></div>
+    <div class="xp-pill" id="xp-pill">0 XP</div>
+  </div>
+  <div class="pglabel" id="pglabel">Módulo 1 de 6 · Passo 1</div>
+  <div class="modules" id="mod-grid"></div>
+  <div class="lesson" id="lesson"></div>
+</div>
+
+<script>
+const MODS = [
+  { icon:"👋", title:"Olá, Python!", sub:"print e variáveis", steps:[
+    { type:"learn", h:"O que é o print()?",
+      c:`O comando <b>print()</b> mostra mensagens na tela. É como o Python "falar" com você. Tudo entre aspas é chamado de <b>string</b> (texto). Você pode usar aspas simples <code>'texto'</code> ou duplas <code>"texto"</code>.`,
+      code:`<span class="cm"># Isso é um comentário — o Python ignora!</span>\n<span class="cf">print</span>(<span class="cs">"Olá, mundo!"</span>)\n<span class="cf">print</span>(<span class="cs">'Bem-vindo ao Python!'</span>)\n<span class="cf">print</span>(<span class="cs">"Python é demais 🐍"</span>)`,
+      out:"Olá, mundo!\nBem-vindo ao Python!\nPython é demais 🐍",
+      tryCode:`print("Olá, mundo!")`, tryLabel:"✏️ Troque o texto e clique em Rodar:" },
+    { type:"quiz", h:"Quiz 🧠", q:"O que o print() faz?",
+      opts:["Imprime no papel 🖨️","Mostra texto na tela 💬","Cria uma variável","Faz uma conta"],
+      correct:1, ok:"🎉 Isso! print() exibe mensagens na tela do computador.", err:"Não! print() mostra texto na tela, não manda para a impressora." },
+    { type:"learn", h:"Variáveis: caixinhas de informação",
+      c:`Uma <b>variável</b> é como uma caixinha com nome onde você guarda um valor. Use <b>=</b> para guardar. Textos ficam entre aspas, números ficam sem aspas.`,
+      code:`<span class="cm"># Criando variáveis</span>\nnome = <span class="cs">"Ana"</span>\nidade = <span class="cn">16</span>\ncidade = <span class="cs">"São Paulo"</span>\n\n<span class="cf">print</span>(nome)\n<span class="cf">print</span>(idade)\n<span class="cf">print</span>(<span class="cs">"Cidade:"</span>, cidade)`,
+      out:"Ana\n16\nCidade: São Paulo",
+      tryCode:`nome = "Ana"\nidade = 16\nprint(nome)\nprint(idade)`, tryLabel:"✏️ Coloque seu nome e sua idade:" },
+    { type:"quiz", h:"Quiz 🧠", q:'Qual código guarda o texto "Python" em uma variável chamada "linguagem"?',
+      opts:['print("Python")','linguagem == "Python"','linguagem = "Python"','"Python" = linguagem'],
+      correct:2, ok:"✅ Certo! Usamos = (um só) para guardar valores em variáveis.", err:"Para guardar usamos = (um só). O == serve para comparar, não guardar." },
+    { type:"learn", h:"Juntando textos com +",
+      c:`Você pode <b>juntar strings</b> usando o operador <b>+</b>. Isso se chama <b>concatenação</b>. Atenção: só funciona com textos. Para misturar número com texto, use vírgula no print() ou converta com <code>str()</code>.`,
+      code:`nome = <span class="cs">"Carlos"</span>\nsaudacao = <span class="cs">"Olá, "</span> + nome + <span class="cs">"!"</span>\n<span class="cf">print</span>(saudacao)\n\n<span class="cm"># Usando vírgula (adiciona espaço automaticamente)</span>\nidade = <span class="cn">17</span>\n<span class="cf">print</span>(<span class="cs">"Tenho"</span>, idade, <span class="cs">"anos"</span>)`,
+      out:"Olá, Carlos!\nTenho 17 anos",
+      tryCode:`nome = "Carlos"\nprint("Olá, " + nome + "!")`, tryLabel:"✏️ Monte uma saudação com seu nome:" }
+  ]},
+  { icon:"🔢", title:"Números e Contas", sub:"Operações matemáticas", steps:[
+    { type:"learn", h:"Python como calculadora",
+      c:`Python faz contas com os operadores: <b>+</b> soma, <b>-</b> subtrai, <b>*</b> multiplica, <b>/</b> divide, <b>//</b> divisão inteira, <b>%</b> resto da divisão e <b>**</b> potência.`,
+      code:`<span class="cf">print</span>(<span class="cn">10</span> + <span class="cn">5</span>)    <span class="cm"># 15</span>\n<span class="cf">print</span>(<span class="cn">20</span> - <span class="cn">8</span>)    <span class="cm"># 12</span>\n<span class="cf">print</span>(<span class="cn">4</span> * <span class="cn">3</span>)     <span class="cm"># 12</span>\n<span class="cf">print</span>(<span class="cn">10</span> / <span class="cn">3</span>)    <span class="cm"># 3.333...</span>\n<span class="cf">print</span>(<span class="cn">10</span> // <span class="cn">3</span>)   <span class="cm"># 3 (divisão inteira)</span>\n<span class="cf">print</span>(<span class="cn">10</span> % <span class="cn">3</span>)    <span class="cm"># 1 (resto)</span>\n<span class="cf">print</span>(<span class="cn">2</span> ** <span class="cn">8</span>)    <span class="cm"># 256 (potência)</span>`,
+      out:"15\n12\n12\n3.3333333333333335\n3\n1\n256",
+      tryCode:`idade = 16\nprint(idade * 12)  # idade em meses\nprint(2 ** 10)    # 2 elevado a 10`, tryLabel:"✏️ Calcule sua idade em meses (idade × 12):" },
+    { type:"quiz", h:"Quiz 🧠", q:"Qual é o resultado de 17 % 5 em Python?",
+      opts:["3","2","0","3.4"],
+      correct:1, ok:"✅ Isso! 17 % 5 = 2 porque 17 = 5×3 + 2. O % dá o resto da divisão.", err:"O operador % dá o resto da divisão. 17 ÷ 5 = 3 com resto 2. Resposta: 2." },
+    { type:"learn", h:"Entrada do usuário com input()",
+      c:`O comando <b>input()</b> pausa o programa e espera o usuário digitar algo. O resultado é sempre uma <b>string</b>. Para usar como número, converta com <b>int()</b> (inteiro) ou <b>float()</b> (decimal).`,
+      code:`nome = <span class="cf">input</span>(<span class="cs">"Qual é o seu nome? "</span>)\n<span class="cf">print</span>(<span class="cs">"Olá,"</span>, nome)\n\n<span class="cm"># Convertendo para número</span>\nidade = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Qual é a sua idade? "</span>))\nfaltam = <span class="cn">18</span> - idade\n<span class="cf">print</span>(<span class="cs">"Faltam"</span>, faltam, <span class="cs">"anos para votar"</span>)`,
+      out:"Qual é o seu nome? Ana\nOlá, Ana\nQual é a sua idade? 15\nFaltam 3 anos para votar",
+      tryCode:`nome = "Maria"  # simule o input aqui\nprint("Olá,", nome)`, tryLabel:"✏️ Simule uma entrada mudando a variável nome:" },
+    { type:"quiz", h:"Quiz 🧠", q:"Para guardar um número inteiro digitado pelo usuário, usamos:",
+      opts:["input()","int(input())","print(input())","número()"],
+      correct:1, ok:"✅ Perfeito! int(input()) converte o texto digitado em número inteiro.", err:"input() sozinho retorna texto (string). Para número inteiro precisamos de int(input())." }
+  ]},
+  { icon:"🔀", title:"Decisões", sub:"if / elif / else", steps:[
+    { type:"learn", h:"Tomando decisões com if e else",
+      c:`O <b>if</b> executa um bloco somente se a condição for verdadeira. O <b>else</b> executa quando a condição é falsa. A <b>indentação</b> (4 espaços ou Tab) é obrigatória em Python!`,
+      code:`idade = <span class="cn">17</span>\n\n<span class="ck">if</span> idade >= <span class="cn">18</span>:\n    <span class="cf">print</span>(<span class="cs">"Você pode votar! 🗳️"</span>)\n<span class="ck">else</span>:\n    <span class="cf">print</span>(<span class="cs">"Ainda não pode votar."</span>)\n    faltam = <span class="cn">18</span> - idade\n    <span class="cf">print</span>(<span class="cs">"Faltam"</span>, faltam, <span class="cs">"ano(s)."</span>)`,
+      out:"Ainda não pode votar.\nFaltam 1 ano(s).",
+      tryCode:`nota = 7\nif nota >= 7:\n    print("Aprovado! ✅")\nelse:\n    print("Reprovado. ❌")`, tryLabel:"✏️ Mude a nota e veja o resultado:" },
+    { type:"quiz", h:"Quiz 🧠", q:"O que acontece quando a condição do if é falsa?",
+      opts:["O programa trava","Executa o bloco do else (se houver)","Ignora todo o código","Dá um erro"],
+      correct:1, ok:"✅ Isso! Quando o if é falso, o Python executa o bloco do else, se existir.", err:"Quando a condição é falsa, o Python pula o if e vai para o else (se houver)." },
+    { type:"learn", h:"Múltiplas condições com elif",
+      c:`Use <b>elif</b> para testar várias condições em sequência. Python verifica cada uma na ordem e executa apenas a primeira verdadeira. Pense como um menu de opções.`,
+      code:`nota = <span class="cn">8</span>\n\n<span class="ck">if</span> nota >= <span class="cn">9</span>:\n    <span class="cf">print</span>(<span class="cs">"Excelente! 🌟"</span>)\n<span class="ck">elif</span> nota >= <span class="cn">7</span>:\n    <span class="cf">print</span>(<span class="cs">"Aprovado! ✅"</span>)\n<span class="ck">elif</span> nota >= <span class="cn">5</span>:\n    <span class="cf">print</span>(<span class="cs">"Recuperação 📚"</span>)\n<span class="ck">else</span>:\n    <span class="cf">print</span>(<span class="cs">"Reprovado ❌"</span>)`,
+      out:"Aprovado! ✅",
+      tryCode:`nota = 8\nif nota >= 9:\n    print("Excelente! 🌟")\nelif nota >= 7:\n    print("Aprovado! ✅")\nelse:\n    print("Reprovado ❌")`, tryLabel:"✏️ Teste com notas diferentes (0 a 10):" },
+    { type:"quiz", h:"Quiz 🧠", q:"Qual símbolo significa 'diferente de' em Python?",
+      opts:["<>","!==","!=","=/="],
+      correct:2, ok:"✅ Correto! != significa 'diferente de'. Outros: == igual, > maior, < menor, >= maior ou igual.", err:"Em Python usamos != para 'diferente de'. Operadores: == igual, != diferente, >, <, >=, <=." },
+    { type:"learn", h:"Operadores lógicos: and, or, not",
+      c:`Combine condições com <b>and</b> (e — ambas verdadeiras), <b>or</b> (ou — basta uma) e <b>not</b> (inverte o valor). São a base da lógica em programação!`,
+      code:`chovendo = <span class="ck">True</span>\ntem_guarda = <span class="ck">False</span>\n\n<span class="ck">if</span> chovendo <span class="ck">and</span> tem_guarda:\n    <span class="cf">print</span>(<span class="cs">"Pode sair! ☂️"</span>)\n<span class="ck">elif</span> chovendo <span class="ck">and not</span> tem_guarda:\n    <span class="cf">print</span>(<span class="cs">"Vai se molhar! 🌧️"</span>)\n<span class="ck">else</span>:\n    <span class="cf">print</span>(<span class="cs">"Dia lindo! ☀️"</span>)`,
+      out:"Vai se molhar! 🌧️",
+      tryCode:`chovendo = True\ntem_guarda = False\nif chovendo and tem_guarda:\n    print("Pode sair! ☂️")\nelif chovendo and not tem_guarda:\n    print("Vai se molhar! 🌧️")\nelse:\n    print("Dia lindo! ☀️")`, tryLabel:"✏️ Mude True/False e veja o que acontece:" }
+  ]},
+  { icon:"🔁", title:"Repetições", sub:"for e while", steps:[
+    { type:"learn", h:"Repetindo com for e range()",
+      c:`O <b>for</b> percorre uma sequência executando o bloco para cada item. O <b>range(início, fim)</b> gera números de início até fim-1. É perfeito quando você sabe quantas vezes repetir.`,
+      code:`<span class="cm"># Contando de 1 a 5</span>\n<span class="ck">for</span> i <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">1</span>, <span class="cn">6</span>):\n    <span class="cf">print</span>(i)\n\n<span class="cm"># Percorrendo letras de uma string</span>\n<span class="ck">for</span> letra <span class="ck">in</span> <span class="cs">"Python"</span>:\n    <span class="cf">print</span>(letra)`,
+      out:"1\n2\n3\n4\n5\nP\ny\nt\nh\no\nn",
+      tryCode:`for i in range(1, 6):\n    print(i)`, tryLabel:"✏️ Mostre a tabuada do 7 usando for:" },
+    { type:"quiz", h:"Quiz 🧠", q:"Quantas vezes o código abaixo vai imprimir?\n\nfor i in range(5):\n    print(i)",
+      opts:["4 vezes","5 vezes","6 vezes","1 vez"],
+      correct:1, ok:"✅ Isso! range(5) gera 0,1,2,3,4 — são 5 números, então repete 5 vezes.", err:"range(5) gera de 0 a 4, que são 5 números: 0, 1, 2, 3, 4." },
+    { type:"learn", h:"Repetindo com while",
+      c:`O <b>while</b> repete enquanto uma condição for verdadeira. Sempre garanta que a condição vai se tornar falsa em algum momento — senão o programa nunca para! O <code>+= 1</code> é um atalho para aumentar o contador.`,
+      code:`contador = <span class="cn">1</span>\n\n<span class="ck">while</span> contador <= <span class="cn">5</span>:\n    <span class="cf">print</span>(<span class="cs">"Contagem:"</span>, contador)\n    contador += <span class="cn">1</span>  <span class="cm"># mesmo que contador = contador + 1</span>\n\n<span class="cf">print</span>(<span class="cs">"Fim! 🚀"</span>)`,
+      out:"Contagem: 1\nContagem: 2\nContagem: 3\nContagem: 4\nContagem: 5\nFim! 🚀",
+      tryCode:`contador = 1\nwhile contador <= 5:\n    print("Contagem:", contador)\n    contador += 1\nprint("Fim!")`, tryLabel:"✏️ Mude o limite (5) para outro número:" },
+    { type:"quiz", h:"Quiz 🧠", q:"Qual é a principal diferença entre for e while?",
+      opts:["Não há diferença","for usa range, while não pode","for é para quantidade conhecida; while repete enquanto uma condição for verdadeira","while é mais rápido que for"],
+      correct:2, ok:"✅ Exato! for quando sabemos quantas vezes repetir. while quando dependemos de uma condição.", err:"for é para repetições com quantidade conhecida; while repete enquanto uma condição for verdadeira." },
+    { type:"learn", h:"break e continue",
+      c:`<b>break</b> encerra o loop imediatamente quando executado. <b>continue</b> pula para a próxima iteração sem executar o restante do bloco atual. Muito úteis para controlar o fluxo!`,
+      code:`<span class="cm"># break: para no 3</span>\n<span class="ck">for</span> i <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">1</span>, <span class="cn">6</span>):\n    <span class="ck">if</span> i == <span class="cn">3</span>:\n        <span class="ck">break</span>\n    <span class="cf">print</span>(i)  <span class="cm"># imprime 1, 2</span>\n\n<span class="cf">print</span>(<span class="cs">"---"</span>)\n\n<span class="cm"># continue: pula o 3</span>\n<span class="ck">for</span> i <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">1</span>, <span class="cn">6</span>):\n    <span class="ck">if</span> i == <span class="cn">3</span>:\n        <span class="ck">continue</span>\n    <span class="cf">print</span>(i)  <span class="cm"># imprime 1,2,4,5</span>`,
+      out:"1\n2\n---\n1\n2\n4\n5",
+      tryCode:`for i in range(1, 11):\n    if i == 5:\n        break\n    print(i)`, tryLabel:"✏️ Use continue para pular apenas números pares:" }
+  ]},
+  { icon:"📦", title:"Listas", sub:"Coleções de dados", steps:[
+    { type:"learn", h:"Criando e acessando listas",
+      c:`Uma <b>lista</b> guarda vários valores em uma variável. Use colchetes <b>[]</b> e separe os itens por vírgula. Acesse pelo <b>índice</b> que começa em 0! O índice <b>-1</b> acessa o último item.`,
+      code:`frutas = [<span class="cs">"maçã"</span>, <span class="cs">"banana"</span>, <span class="cs">"laranja"</span>]\n\n<span class="cf">print</span>(frutas[<span class="cn">0</span>])    <span class="cm"># maçã (primeiro)</span>\n<span class="cf">print</span>(frutas[<span class="cn">1</span>])    <span class="cm"># banana</span>\n<span class="cf">print</span>(frutas[-<span class="cn">1</span>])   <span class="cm"># laranja (último)</span>\n<span class="cf">print</span>(<span class="cf">len</span>(frutas))  <span class="cm"># 3 (tamanho)</span>`,
+      out:"maçã\nbanana\nlaranja\n3",
+      tryCode:`frutas = ["maçã", "banana", "laranja"]\nprint(frutas[0])\nprint(len(frutas))`, tryLabel:"✏️ Crie uma lista com 3 matérias favoritas:" },
+    { type:"quiz", h:"Quiz 🧠", q:'Dada a lista: cores = ["vermelho", "verde", "azul"]\nO que é cores[1]?',
+      opts:['"vermelho"','"verde"','"azul"','Erro — índice inválido'],
+      correct:1, ok:'✅ Isso! Listas começam no índice 0. Então índice 1 = "verde".', err:'Listas começam no índice 0. O primeiro é 0, o segundo é 1. Então cores[1] = "verde".' },
+    { type:"learn", h:"Modificando listas",
+      c:`Listas são <b>mutáveis</b>: você pode mudar depois de criar. Métodos úteis: <b>append()</b> adiciona no fim, <b>remove()</b> remove um item pelo valor, <b>pop()</b> remove pelo índice.`,
+      code:`notas = [<span class="cn">7</span>, <span class="cn">8</span>, <span class="cn">9</span>]\n\nnotas.append(<span class="cn">10</span>)       <span class="cm"># adiciona 10</span>\n<span class="cf">print</span>(notas)            <span class="cm"># [7, 8, 9, 10]</span>\n\nnotas.remove(<span class="cn">7</span>)        <span class="cm"># remove o valor 7</span>\n<span class="cf">print</span>(notas)            <span class="cm"># [8, 9, 10]</span>\n\nnotas[<span class="cn">0</span>] = <span class="cn">6</span>            <span class="cm"># altera índice 0</span>\n<span class="cf">print</span>(notas)            <span class="cm"># [6, 9, 10]</span>`,
+      out:"[7, 8, 9, 10]\n[8, 9, 10]\n[6, 9, 10]",
+      tryCode:`notas = [7, 8, 9]\nnotas.append(10)\nprint(notas)`, tryLabel:"✏️ Adicione mais itens com append() e veja:" },
+    { type:"quiz", h:"Quiz 🧠", q:"Como adicionar um item ao final de uma lista chamada 'nomes'?",
+      opts:["nomes.add('João')","nomes.append('João')","nomes + 'João'","nomes.insert('João')"],
+      correct:1, ok:"✅ Perfeito! append() é o método para adicionar itens ao final da lista.", err:"O método correto é append(). insert() também existe mas precisa do índice: insert(posição, valor)." },
+    { type:"learn", h:"Percorrendo listas e funções úteis",
+      c:`Combine listas com <b>for</b> para processar cada item. As funções <b>sum()</b>, <b>max()</b> e <b>min()</b> funcionam direto em listas numéricas — super úteis para calcular médias!`,
+      code:`notas = [<span class="cn">7</span>, <span class="cn">8</span>, <span class="cn">9</span>, <span class="cn">10</span>]\n\n<span class="ck">for</span> nota <span class="ck">in</span> notas:\n    <span class="cf">print</span>(<span class="cs">"Nota:"</span>, nota)\n\nmedia = <span class="cf">sum</span>(notas) / <span class="cf">len</span>(notas)\n<span class="cf">print</span>(<span class="cs">"Média:"</span>, media)\n<span class="cf">print</span>(<span class="cs">"Maior:"</span>, <span class="cf">max</span>(notas))\n<span class="cf">print</span>(<span class="cs">"Menor:"</span>, <span class="cf">min</span>(notas))`,
+      out:"Nota: 7\nNota: 8\nNota: 9\nNota: 10\nMédia: 8.5\nMaior: 10\nMenor: 7",
+      tryCode:`notas = [7, 8, 9, 10]\nfor nota in notas:\n    print("Nota:", nota)\nprint("Média:", sum(notas)/len(notas))`, tryLabel:"✏️ Adicione mais notas e recalcule a média:" }
+  ]},
+  { icon:"🛠️", title:"Funções", sub:"Criando seus blocos", steps:[
+    { type:"learn", h:"Criando funções com def",
+      c:`Uma <b>função</b> é um bloco de código com nome que você pode usar várias vezes. Use <b>def</b> para criar. Isso evita repetição e organiza o programa. Pense em funções como receitas!`,
+      code:`<span class="ck">def</span> <span class="cf">saudar</span>():\n    <span class="cf">print</span>(<span class="cs">"Olá! Bem-vindo ao Python!"</span>)\n    <span class="cf">print</span>(<span class="cs">"Vamos programar juntos? 🐍"</span>)\n\n<span class="cm"># Chamando a função — pode chamar quantas vezes quiser!</span>\n<span class="cf">saudar</span>()\n<span class="cf">saudar</span>()`,
+      out:"Olá! Bem-vindo ao Python!\nVamos programar juntos? 🐍\nOlá! Bem-vindo ao Python!\nVamos programar juntos? 🐍",
+      tryCode:`def saudar():\n    print("Olá! Bem-vindo ao Python!")\n\nsaudar()`, tryLabel:"✏️ Crie sua própria função e chame ela:" },
+    { type:"quiz", h:"Quiz 🧠", q:"Qual palavra-chave usamos para criar uma função em Python?",
+      opts:["function","func","def","create"],
+      correct:2, ok:"✅ Isso! Em Python usamos def (abreviação de 'define') para criar funções.", err:"Em Python usamos def. Em outras linguagens pode ser 'function', mas aqui é def." },
+    { type:"learn", h:"Funções com parâmetros",
+      c:`<b>Parâmetros</b> são variáveis que a função recebe. Eles ficam entre os parênteses. Quando você chama a função e passa valores, eles se chamam <b>argumentos</b>. Você pode ter vários!`,
+      code:`<span class="ck">def</span> <span class="cf">saudar</span>(nome, hora):\n    <span class="cf">print</span>(<span class="cs">"Boa"</span>, hora + <span class="cs">","</span>, nome + <span class="cs">"!"</span>)\n\n<span class="cf">saudar</span>(<span class="cs">"Ana"</span>, <span class="cs">"tarde"</span>)\n<span class="cf">saudar</span>(<span class="cs">"Carlos"</span>, <span class="cs">"noite"</span>)\n\n<span class="ck">def</span> <span class="cf">area_retangulo</span>(largura, altura):\n    <span class="cf">print</span>(<span class="cs">"Área:"</span>, largura * altura)\n\n<span class="cf">area_retangulo</span>(<span class="cn">5</span>, <span class="cn">3</span>)`,
+      out:"Boa tarde, Ana!\nBoa noite, Carlos!\nÁrea: 15",
+      tryCode:`def saudar(nome, hora):\n    print("Boa", hora + ",", nome + "!")\n\nsaudar("Ana", "tarde")\nsaudar("Carlos", "noite")`, tryLabel:"✏️ Crie uma função que calcula a área de um triângulo:" },
+    { type:"quiz", h:"Quiz 🧠", q:"O que são parâmetros em uma função?",
+      opts:["São os resultados da função","São variáveis que a função recebe ao ser chamada","São comentários dentro da função","São erros do Python"],
+      correct:1, ok:"✅ Exato! Parâmetros são as variáveis declaradas na função. Os valores passados ao chamar são os argumentos.", err:"Parâmetros são as variáveis que a função recebe. Os valores que você passa ao chamar são os argumentos." },
+    { type:"learn", h:"Funções com return",
+      c:`O <b>return</b> faz a função <b>devolver</b> um valor para quem a chamou. Isso permite usar o resultado em cálculos, guardá-lo em variáveis ou passá-lo para outra função. É o poder real das funções!`,
+      code:`<span class="ck">def</span> <span class="cf">calcular_media</span>(notas):\n    soma = <span class="cf">sum</span>(notas)\n    <span class="ck">return</span> soma / <span class="cf">len</span>(notas)\n\n<span class="ck">def</span> <span class="cf">aprovado</span>(media):\n    <span class="ck">return</span> media >= <span class="cn">7</span>\n\nminhas_notas = [<span class="cn">8</span>, <span class="cn">7</span>, <span class="cn">9</span>, <span class="cn">6</span>]\nm = <span class="cf">calcular_media</span>(minhas_notas)\n<span class="cf">print</span>(<span class="cs">"Média:"</span>, m)\n<span class="cf">print</span>(<span class="cs">"Aprovado?"</span>, <span class="cf">aprovado</span>(m))`,
+      out:"Média: 7.5\nAprovado? True",
+      tryCode:`def calcular_media(notas):\n    return sum(notas) / len(notas)\n\nminhas_notas = [8, 7, 9, 6]\nm = calcular_media(minhas_notas)\nprint("Média:", m)`, tryLabel:"✏️ Adicione suas notas e calcule a média:" }
+  ]}
+];
+
+let curMod=0, curStep=0, quizAnswered=false, xp=0;
+const completed=new Set(), modProg=Array(6).fill(0);
+const totalSteps=MODS.reduce((s,m)=>s+m.steps.length,0);
+
+function doneSteps(){let s=0;for(let i=0;i<MODS.length;i++)s+=modProg[i];return s;}
+
+function renderMods(){
+  document.getElementById("mod-grid").innerHTML=MODS.map((m,i)=>{
+    const done=completed.has(i),active=i===curMod,locked=i>0&&!completed.has(i-1)&&!active&&!done;
+    return`<div class="mcard${active?" active":""}${locked?" locked":""}" onclick="goMod(${i})">
+      <div class="mbadge ${done?"done":active?"cur":"lck"}">${done?"✓":active?"Atual":"🔒"}</div>
+      <div class="micon">${m.icon}</div><div class="mtitle">${m.title}</div><div class="msub">${m.sub}</div></div>`;
+  }).join("");
+}
+
+function renderProgress(){
+  const pct=Math.round(doneSteps()/totalSteps*100);
+  document.getElementById("pbfill").style.width=pct+"%";
+  document.getElementById("xp-pill").textContent=xp+" XP";
+  document.getElementById("pglabel").textContent=`Módulo ${curMod+1} de 6 · Passo ${curStep+1} de ${MODS[curMod].steps.length}`;
+}
+
+function dots(){
+  return`<div class="dots">${MODS[curMod].steps.map((_,i)=>`<div class="dot${i===curStep?" active":i<curStep?" done":""}"></div>`).join("")}</div>`;
+}
+
+function renderStep(){
+  quizAnswered=false;
+  const step=MODS[curMod].steps[curStep];
+  const la=document.getElementById("lesson");
+  const prev=`<button class="nav-btn" onclick="prevStep()" ${curMod===0&&curStep===0?"disabled":""}>← Anterior</button>`;
+  const next=`<button class="nav-btn primary" id="nbtn" onclick="nextStep()">Próximo →</button>`;
+
+  if(step.type==="learn"){
+    la.innerHTML=`<h2>${step.h}</h2>
+<div class="concept">${step.c}</div>
+<div class="code-block">${step.code}</div>
+<div class="out-preview"><strong>Saída esperada</strong><span>${step.out.replace(/\n/g,"<br>")}</span></div>
+<div><span class="try-label">${step.tryLabel}</span>
+<textarea class="try-code" id="trycode">${step.tryCode}</textarea>
+<button class="run-btn" onclick="runCode()"><svg viewBox="0 0 16 16"><path d="M3 2l10 6-10 6z"/></svg> Rodar</button>
+<div class="out-box" id="outbox"></div></div>
+<div class="nav-row">${prev}${dots()}${next}</div>`;
+  } else {
+    const opts=step.opts.map((o,i)=>`<button class="qopt" id="qo${i}" onclick="answerQuiz(${i})">${o}</button>`).join("");
+    la.innerHTML=`<h2>${step.h}</h2>
+<div class="quiz-wrap"><div class="quiz-q">${step.q}</div>
+<div class="qopts">${opts}</div>
+<div class="qfb" id="qfb"></div></div>
+<div class="nav-row">${prev}${dots()}<button class="nav-btn primary" id="nbtn" onclick="nextStep()" style="display:none">Continuar →</button></div>`;
+  }
+  renderProgress(); renderMods();
+}
+
+function runCode(){
+  const code=document.getElementById("trycode").value;
+  const box=document.getElementById("outbox");
+  box.classList.add("vis");
+  const vars={};let out=[];
+  const lines=code.split("\n");
+  for(let i=0;i<lines.length;i++){
+    const t=lines[i].trim();
+    if(!t||t.startsWith("#"))continue;
+    const am=t.match(/^([a-zA-Z_]\w*)\s*=\s*(.+)$/);
+    if(am&&!t.startsWith("print")&&!t.startsWith("if")&&!t.startsWith("for")&&!t.startsWith("while")&&!t.startsWith("def")){
+      const k=am[1],v=am[2].trim();
+      if(/^\[/.test(v)){try{vars[k]=JSON.parse(v.replace(/'/g,'"'));}catch(e){vars[k]=v;}}
+      else if(/^["']/.test(v))vars[k]=v.replace(/^["']|["']$/g,"");
+      else if(v==="True")vars[k]=true;
+      else if(v==="False")vars[k]=false;
+      else if(!isNaN(v))vars[k]=Number(v);
+      else if(v in vars)vars[k]=vars[v];
+      continue;
+    }
+    const fm=t.match(/^for\s+(\w+)\s+in\s+range\((\d+)(?:,\s*(\d+))?\)\s*:/);
+    if(fm){
+      const lv=fm[1],s2=fm[3]?Number(fm[2]):0,e=fm[3]?Number(fm[3]):Number(fm[2]);
+      const body=[];let j=i+1;
+      while(j<lines.length&&(lines[j].startsWith("    ")||lines[j].startsWith("\t"))){body.push(lines[j].trim());j++;}
+      for(let v=s2;v<e;v++){vars[lv]=v;for(const bl of body){const pm=bl.match(/^print\((.+)\)$/);if(pm)out.push(ep(pm[1],vars));}}
+      i=j-1;continue;
+    }
+    const pm=t.match(/^print\((.+)\)$/);
+    if(pm)out.push(ep(pm[1],vars));
+  }
+  box.textContent=out.length?out.join("\n"):"✓ Rodou sem erros!";
+}
+
+function ep(inner,vars){
+  return inner.split(/,(?=(?:[^"']*["'][^"']*["'])*[^"']*$)/).map(p=>{
+    return p.trim().split("+").map(x=>x.trim()).map(cp=>{
+      if(/^["']/.test(cp))return cp.replace(/^["']|["']$/g,"");
+      if(!isNaN(cp))return cp;
+      if(cp in vars)return Array.isArray(vars[cp])?JSON.stringify(vars[cp]):vars[cp];
+      const lm=cp.match(/^len\((\w+)\)$/);if(lm&&vars[lm[1]])return vars[lm[1]].length;
+      const sm=cp.match(/^sum\((\w+)\)$/);if(sm&&Array.isArray(vars[sm[1]]))return vars[sm[1]].reduce((a,b)=>a+b,0);
+      return cp;
+    }).join("");
+  }).join(" ");
+}
+
+function answerQuiz(i){
+  if(quizAnswered)return;
+  quizAnswered=true;
+  const step=MODS[curMod].steps[curStep];
+  const ok=i===step.correct;
+  document.getElementById("qo"+i).classList.add(ok?"correct":"wrong");
+  if(!ok)document.getElementById("qo"+step.correct).classList.add("correct");
+  document.querySelectorAll(".qopt").forEach(b=>b.disabled=true);
+  const fb=document.getElementById("qfb");
+  fb.textContent=ok?step.ok:step.err;
+  fb.className="qfb show "+(ok?"ok":"err");
+  if(ok){xp+=20;renderProgress();}
+  document.getElementById("nbtn").style.display="inline-flex";
+}
+
+function nextStep(){
+  modProg[curMod]=Math.max(modProg[curMod],curStep+1);
+  xp+=10;
+  if(curStep<MODS[curMod].steps.length-1){curStep++;}
+  else{
+    completed.add(curMod);modProg[curMod]=MODS[curMod].steps.length;
+    if(curMod<MODS.length-1){curMod++;curStep=0;}
+    else{showCongrats();return;}
+  }
+  renderStep();window.scrollTo(0,0);
+}
+
+function prevStep(){
+  if(curStep>0){curStep--;}
+  else if(curMod>0){curMod--;curStep=MODS[curMod].steps.length-1;}
+  renderStep();window.scrollTo(0,0);
+}
+
+function goMod(idx){
+  const locked=idx>0&&!completed.has(idx-1)&&idx!==curMod&&!completed.has(idx);
+  if(locked)return;
+  curMod=idx;curStep=0;renderStep();window.scrollTo(0,0);
+}
+
+function showCongrats(){
+  renderMods();
+  document.getElementById("pbfill").style.width="100%";
+  document.getElementById("xp-pill").textContent=xp+" XP";
+  document.getElementById("pglabel").textContent="🎉 Curso concluído!";
+  document.getElementById("lesson").innerHTML=`
+<div class="congrats">
+  <div class="trophy">🏆</div>
+  <h2>Parabéns! Curso concluído!</h2>
+  <p>Você aprendeu os fundamentos do Python: output, variáveis, operações, decisões, repetições, listas e funções. Agora você sabe programar!</p>
+  <div class="xp-final">${xp} XP ganhos!</div>
+  <div class="badge-grid">
+    <div class="badge-item">👋 Olá, Python!</div>
+    <div class="badge-item">🔢 Números e Contas</div>
+    <div class="badge-item">🔀 Decisões</div>
+    <div class="badge-item">🔁 Repetições</div>
+    <div class="badge-item">📦 Listas</div>
+    <div class="badge-item">🛠️ Funções</div>
+  </div>
+  <p><b>Próximos passos:</b> instale o Python em python.org, experimente o VS Code como editor, e pratique criando pequenos projetos!</p>
+  <div style="margin-top:1.5rem;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a href="https://python.org/downloads" target="_blank" style="background:var(--green);color:#fff;text-decoration:none;padding:10px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:14px;">Instalar Python ↗</a>
+    <button class="nav-btn" onclick="curMod=0;curStep=0;xp=0;completed.clear();modProg.fill(0);renderStep();">Recomeçar o curso</button>
+  </div>
+</div>`;
+}
+
+renderStep();
+</script>
+</body>
+</html>
